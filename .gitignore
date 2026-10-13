@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+target/
+hasil_*.png
+output_*.png
+output_*.json
+*_crop_pembeli.png
+*_annotated.png
