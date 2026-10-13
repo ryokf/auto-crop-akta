@@ -26,7 +26,7 @@ pub struct CropResult {
     pub rotation_applied: u32,
     pub bbox: BoundingBox,
     pub raw_text: String,
-    pub buyer_info: parser::BuyerInfo,
+    pub buyer_info: parser::BuyerJsonOutput,
     #[serde(skip)]
     pub cropped_image: RgbaImage,
     #[serde(skip)]
@@ -147,7 +147,11 @@ fn draw_bounding_box(img: &mut RgbaImage, bbox: &BoundingBox) {
 }
 
 /// Fungsi utama: Proses dokumen PDF akta dan potong lokasi data pembeli
-pub async fn process_akta_pdf(pdf_path: &Path, scale: f32) -> Result<CropResult, Box<dyn std::error::Error>> {
+pub async fn process_akta_pdf(
+    pdf_path: &Path,
+    scale: f32,
+    custom_id: Option<&str>,
+) -> Result<CropResult, Box<dyn std::error::Error>> {
     let abs_pdf = std::fs::canonicalize(pdf_path)?;
     let pdf_path_str = abs_pdf.to_str().unwrap().trim_start_matches(r"\\?\");
 
@@ -250,7 +254,7 @@ pub async fn process_akta_pdf(pdf_path: &Path, scale: f32) -> Result<CropResult,
             draw_bounding_box(&mut annotated_page, &bbox);
 
             let raw_text = raw_lines_vec.join("\n");
-            let buyer_info = parser::parse_buyer_info(&raw_text);
+            let buyer_info = parser::parse_buyer_to_custom_json(&raw_text, custom_id);
 
             return Ok(CropResult {
                 success: true,

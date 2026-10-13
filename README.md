@@ -76,34 +76,22 @@ cargo run --release -- sample_input.pdf -o hasil_crop.png
 ```
 
 ### C. Menyimpan Halaman Anotasi & Metadata JSON
-Gunakan opsi `--annotated` untuk menghasilkan halaman penuh berkotak oranye, dan `--json` untuk menghasilkan file metadata `.json`:
+Gunakan opsi `--annotated` untuk menghasilkan halaman penuh berkotak oranye, dan `--json` untuk menghasilkan file metadata `.json`. Anda juga dapat menentukan ID khusus dengan opsi `--id`:
 ```bash
-cargo run --release -- sample_input.pdf -o hasil_crop.png --annotated --json
+cargo run --release -- sample_input.pdf -o hasil_crop.png --annotated --json --id 12345
 ```
 
-Contoh keluaran file `.json`:
+Contoh keluaran file `.json` yang dihasilkan:
 ```json
 {
-  "success": true,
-  "page_number": 4,
-  "total_pages": 8,
-  "rotation_applied": 270,
-  "bbox": {
-    "x": 373,
-    "y": 1231,
-    "width": 1147,
-    "height": 523
-  },
-  "raw_text": "11.-Tuan MUHAMMAD FADHLILLAH, Warga Negara Indonesia, lahir...",
-  "buyer_info": {
-    "sapaan": "Tuan",
-    "nama": "MUHAMMAD FADHLILLAH",
-    "nik": "3321010612060001",
-    "ttl": "Demak, 06 (enam) Desember tahun 2006 (duaribu enam)",
-    "pekerjaan": "Pelajar/ Mahasiswa",
-    "alamat": "Kabupaten Demak, Pondok Majapahit I Blok KK Nomor 17, Rukun Tetangga 006, Rukun Warga 005, Desa Bandungrejo, Kecamatan Mranggen",
-    "peran": "Pihak Kedua / Pembeli"
-  }
+  "id": "12345",
+  "nik": "3321010612060001",
+  "nama": "MUHAMMAD FADHLILLAH",
+  "alamat": "Kabupaten Demak, Pondok Majapahit I Blok KK Nomor 17, Rukun Tetangga 006, Rukun Warga 005, Desa Bandungrejo, Kecamatan Mranggen",
+  "tempat_lahir": "Demak",
+  "tgl_lahir": "06/12/2006",
+  "pekerjaan": "Pelajar / Mahasiswa",
+  "tipe_bukti": "1"
 }
 ```
 

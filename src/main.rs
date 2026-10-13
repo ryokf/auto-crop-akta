@@ -24,9 +24,13 @@ struct Cli {
     #[arg(long, default_value_t = false)]
     annotated: bool,
 
-    /// Simpan data terstruktur pembeli ke format JSON
+    /// Simpan data pembeli ke file format JSON sesuai spesifikasi
     #[arg(long, default_value_t = false)]
     json: bool,
+
+    /// Nilai ID kustom untuk output JSON (default: "12345")
+    #[arg(long)]
+    id: Option<String>,
 
     /// Skala resolusi rendering PDF (default: 2.0)
     #[arg(long, default_value_t = 2.0)]
@@ -38,11 +42,12 @@ async fn handle_single_pdf(
     output_path: &Path,
     annotated_path: Option<&Path>,
     save_json: bool,
+    custom_id: Option<&str>,
     scale: f32,
 ) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n[MEMPROSES] {} ...", pdf_path.display());
 
-    let result = process_akta_pdf(pdf_path, scale).await?;
+    let result = process_akta_pdf(pdf_path, scale, custom_id).await?;
 
     // Simpan gambar hasil crop
     if let Some(parent) = output_path.parent() {
@@ -61,19 +66,14 @@ async fn handle_single_pdf(
         println!("  * Halaman Beranotasi : {}", ann_path.display());
     }
 
-    let b = &result.buyer_info;
-    println!("\n--- Data Pembeli Terstruktur ---");
-    println!("  Nama      : {} {}", b.sapaan.as_deref().unwrap_or(""), b.nama.as_deref().unwrap_or("-"));
-    println!("  NIK       : {}", b.nik.as_deref().unwrap_or("-"));
-    println!("  TTL       : {}", b.ttl.as_deref().unwrap_or("-"));
-    println!("  Pekerjaan : {}", b.pekerjaan.as_deref().unwrap_or("-"));
-    println!("  Alamat    : {}", b.alamat.as_deref().unwrap_or("-"));
+    let json_output_str = serde_json::to_string_pretty(&result.buyer_info)?;
+    println!("\n--- JSON Data Pembeli ---");
+    println!("{}", json_output_str);
 
     if save_json {
         let json_path = output_path.with_extension("json");
-        let json_str = serde_json::to_string_pretty(&result)?;
-        std::fs::write(&json_path, json_str)?;
-        println!("  * Metadata JSON      : {}", json_path.display());
+        std::fs::write(&json_path, &json_output_str)?;
+        println!("\n  * File JSON Disimpan : {}", json_path.display());
     }
 
     Ok(())
@@ -104,6 +104,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &out_path,
             ann_path.as_deref(),
             args.json,
+            args.id.as_deref(),
             args.scale,
         ).await {
             eprintln!("[GAGAL] Terjadi kesalahan: {}", e);
@@ -148,6 +149,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &out_file,
                 ann_file.as_deref(),
                 args.json,
+                args.id.as_deref(),
                 args.scale,
             ).await {
                 Ok(_) => success_count += 1,
